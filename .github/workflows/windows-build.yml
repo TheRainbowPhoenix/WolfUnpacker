@@ -29,15 +29,6 @@ jobs:
       - name: Show MSBuild version
         run: msbuild -version
 
-      # Install FLTK headers with vcpkg (x64)
-      - name: Install FLTK (headers) via vcpkg
-        shell: pwsh
-        run: |
-          & C:\vcpkg\vcpkg.exe install fltk:x64-windows
-          # Make headers visible to the compiler without touching your .vcxproj files
-          Add-Content $env:GITHUB_ENV "INCLUDE=C:\vcpkg\installed\x64-windows\include;$env:INCLUDE"
-
-
       - name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
         shell: cmd
         run: >
