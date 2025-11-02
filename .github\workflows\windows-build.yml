@@ -1,0 +1,57 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch: {}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [ Release ] # , Debug 
+        platform: [ x64 ]
+        # If you also need Win32, add "Win32" here, but be sure your 3rdParty libs match that arch:
+        # platform: [ x64, Win32 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild (VS 2022)
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '17'             # Visual Studio 2022
+          msbuild-architecture: x64    # Use 64-bit MSBuild
+
+      - name: Show MSBuild version
+        run: msbuild -version
+
+      # Build the solution using toolset v143 (from project) and override the SDK to 10.0
+      - name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
+        shell: cmd
+        run: >
+          msbuild "UberWolf.sln"
+          /m
+          /verbosity:minimal
+          /p:Configuration=${{ matrix.configuration }}
+          /p:Platform=${{ matrix.platform }}
+          /p:WindowsTargetPlatformVersion=10.0
+          /p:PreferredToolArchitecture=x64
+
+      # Collect outputs. Projects sometimes emit to build\<Platform>\<Configuration>\,
+      # but also to the default VS folders (e.g. UberWolf\x64\Release\). We grab both.
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: UberWolf-${{ matrix.platform }}-${{ matrix.configuration }}
+          if-no-files-found: warn
+          path: |
+            build\${{ matrix.platform }}\${{ matrix.configuration }}\**
+            UberWolf\${{ matrix.platform }}\${{ matrix.configuration }}\**
+            UberWolfCli\${{ matrix.platform }}\${{ matrix.configuration }}\**
+            UberWolfLib\${{ matrix.platform }}\${{ matrix.configuration }}\**
