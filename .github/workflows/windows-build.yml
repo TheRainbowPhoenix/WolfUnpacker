@@ -14,9 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [ Release ] # , Debug 
-        platform: [ x64 ]
-        # If you also need Win32, add "Win32" here, but be sure your 3rdParty libs match that arch:
-        # platform: [ x64, Win32 ]
+        platform: [ x64 ] # platform: [ x64, Win32 ]
 
     steps:
       - name: Checkout
@@ -31,7 +29,15 @@ jobs:
       - name: Show MSBuild version
         run: msbuild -version
 
-      # Build the solution using toolset v143 (from project) and override the SDK to 10.0
+      # Install FLTK headers with vcpkg (x64)
+      - name: Install FLTK (headers) via vcpkg
+        shell: pwsh
+        run: |
+          & C:\vcpkg\vcpkg.exe install fltk:x64-windows
+          # Make headers visible to the compiler without touching your .vcxproj files
+          Add-Content $env:GITHUB_ENV "INCLUDE=C:\vcpkg\installed\x64-windows\include;$env:INCLUDE"
+
+
       - name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
         shell: cmd
         run: >
