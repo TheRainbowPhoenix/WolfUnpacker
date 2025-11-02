@@ -31,7 +31,6 @@ jobs:
 
       - name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
         shell: cmd
-        continue-on-error: true
         run: >
           msbuild "UberWolf.sln"
           /m
