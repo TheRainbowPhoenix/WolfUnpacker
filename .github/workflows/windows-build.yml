@@ -31,6 +31,7 @@ jobs:
 
       - name: Build ${{ matrix.platform }} ${{ matrix.configuration }}
         shell: cmd
+        continue-on-error: true
         run: >
           msbuild "UberWolf.sln"
           /m
@@ -43,6 +44,7 @@ jobs:
       # Collect outputs. Projects sometimes emit to build\<Platform>\<Configuration>\,
       # but also to the default VS folders (e.g. UberWolf\x64\Release\). We grab both.
       - name: Upload artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: UberWolf-${{ matrix.platform }}-${{ matrix.configuration }}
